@@ -295,10 +295,6 @@ export default function NovaSolicitacao() {
                     style={itemSelecionado ? inputReadonlyStyle : inputStyle} readOnly={!!itemSelecionado} />
                 </Field>
               </div>
-              <Field label="Grupo Vinculado">
-                <input value={form.grupoVinculado} onChange={e => setForm({ ...form, grupoVinculado: e.target.value })}
-                  style={itemSelecionado ? inputReadonlyStyle : inputStyle} readOnly={!!itemSelecionado} />
-              </Field>
               {itemNovo && (
                 <Field label="Categoria">
                   <select value={form.categoriaId} onChange={e => setForm({ ...form, categoriaId: e.target.value })} style={inputStyle}>

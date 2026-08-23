@@ -1,10 +1,10 @@
 import Topbar from './Topbar.jsx';
 import Sidebar from './Sidebar.jsx';
 
-export default function Layout({ children, usuario, onLogout, onLogin }) {
+export default function Layout({ children, usuario, onLogout }) {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
-      <Topbar usuario={usuario} onLogout={onLogout} onLogin={onLogin} />
+      <Topbar usuario={usuario} onLogout={onLogout} />
       <div style={{ display: 'flex' }}>
         <Sidebar usuario={usuario} />
         <main style={{ flex: 1, padding: '22px 26px', background: 'var(--bg3)' }}>

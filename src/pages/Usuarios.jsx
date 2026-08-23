@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
 import { listarUsuarios, atualizarUsuario } from '../services/usuarioService.jsx';
 import { listarSetores } from '../services/setorService.jsx';
-import Button from '../components/ui/Button.jsx';
 
-const perfisOpcoes = ['SERVIDOR', 'APROVADOR', 'ADMINISTRADOR'];
 const perfisLabels = { SERVIDOR: 'Servidor', APROVADOR: 'Aprovador', ADMINISTRADOR: 'Administrador' };
 const perfisCores = {
   SERVIDOR:      { background: 'var(--bg3)',     color: 'var(--text2)',    border: '1px solid var(--border2)' },
@@ -29,7 +27,6 @@ export default function Usuarios() {
         listarUsuarios(),
         listarSetores(),
       ]);
-      console.log('Primeiro usuário:', JSON.stringify(resUsuarios.data.usuarios[0]));
       setUsuarios(resUsuarios.data.usuarios);
       setSetores(resSetores.data.setores);
     } catch (err) {
@@ -60,7 +57,7 @@ export default function Usuarios() {
           Gerenciar Usuários
         </h1>
         <p style={{ fontSize: '12px', color: 'var(--text2)' }}>
-          Gerencie perfis e setores dos usuários
+          Gerencie o setor dos usuários
         </p>
       </div>
 
@@ -117,21 +114,6 @@ export default function Usuarios() {
               </span>
 
               <select
-                value={u.perfil}
-                disabled={atualizando === u._id}
-                onChange={e => handleAtualizar(u._id, { perfil: e.target.value })}
-                style={{
-                  fontSize: '11px', padding: '5px 8px',
-                  border: '1px solid var(--border2)', borderRadius: 'var(--radius)',
-                  background: 'var(--bg)', color: 'var(--text)', cursor: 'pointer',
-                }}
-              >
-                {perfisOpcoes.map(p => (
-                  <option key={p} value={p}>{perfisLabels[p]}</option>
-                ))}
-              </select>
-
-              <select
                 value={u.setor?._id?.toString() || ''}
                 disabled={atualizando === u._id}
                 onChange={e => handleAtualizar(u._id, { setorId: e.target.value || null })}
@@ -139,6 +121,7 @@ export default function Usuarios() {
                   fontSize: '11px', padding: '5px 8px',
                   border: '1px solid var(--border2)', borderRadius: 'var(--radius)',
                   background: 'var(--bg)', color: 'var(--text)', cursor: 'pointer',
+                  marginLeft: 'auto',
                 }}
               >
                 <option value="">Sem setor</option>

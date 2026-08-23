@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { listarSolicitacoes, cancelarSolicitacao, editarSolicitacao } from '../services/solicitacaoService.jsx';
 import { useNavigate } from 'react-router-dom';
 import Badge from '../components/ui/Badge.jsx';
 import Button from '../components/ui/Button.jsx';
+import StatCard from '../components/ui/StatCard.jsx';
 
 const prioridadeCor = {
   ALTA:  { background: 'var(--red-bg)',   color: 'var(--red-dk)',   border: '1px solid var(--red-bd)' },
@@ -10,10 +11,19 @@ const prioridadeCor = {
   BAIXA: { background: 'var(--green-bg)', color: 'var(--green-dk)', border: '1px solid var(--green-bd)' },
 };
 
+const statusTone = {
+  PENDENTE:  { background: 'var(--amber-bg)', color: 'var(--amber-dk)', border: '1px solid var(--amber-bd)' },
+  APROVADA:  { background: 'var(--green-bg)', color: 'var(--green-dk)', border: '1px solid var(--green-bd)' },
+  REJEITADA: { background: 'var(--red-bg)',   color: 'var(--red-dk)',   border: '1px solid var(--red-bd)' },
+  CANCELADA: { background: 'var(--bg3)',      color: 'var(--text2)',   border: '1px solid var(--border2)' },
+};
+
 export default function Solicitacoes() {
   const [solicitacoes, setSolicitacoes] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [filtroStatus, setFiltroStatus] = useState('');
+  const [filtroPrioridade, setFiltroPrioridade] = useState('');
+  const [buscaTexto, setBuscaTexto] = useState('');
   const [selecionada, setSelecionada] = useState(null);
   const [editando, setEditando] = useState(false);
   const [formEdicao, setFormEdicao] = useState({});
@@ -23,12 +33,12 @@ export default function Solicitacoes() {
 
   useEffect(() => {
     buscarSolicitacoes();
-  }, [filtroStatus]);
+  }, []);
 
   const buscarSolicitacoes = async () => {
     try {
       setCarregando(true);
-      const res = await listarSolicitacoes(filtroStatus ? { status: filtroStatus } : {});
+      const res = await listarSolicitacoes({});
       setSolicitacoes(res.data.solicitacoes);
     } catch (err) {
       console.error(err);
@@ -36,6 +46,23 @@ export default function Solicitacoes() {
       setCarregando(false);
     }
   };
+
+  const contagem = useMemo(() => ({
+    total: solicitacoes.length,
+    PENDENTE: solicitacoes.filter(s => s.status === 'PENDENTE').length,
+    APROVADA: solicitacoes.filter(s => s.status === 'APROVADA').length,
+    REJEITADA: solicitacoes.filter(s => s.status === 'REJEITADA').length,
+    CANCELADA: solicitacoes.filter(s => s.status === 'CANCELADA').length,
+  }), [solicitacoes]);
+
+  const solicitacoesFiltradas = useMemo(() => {
+    return solicitacoes.filter(s => {
+      if (filtroStatus && s.status !== filtroStatus) return false;
+      if (filtroPrioridade && s.grauPrioridade !== filtroPrioridade) return false;
+      if (buscaTexto && !s.descricao?.toLowerCase().includes(buscaTexto.toLowerCase())) return false;
+      return true;
+    });
+  }, [solicitacoes, filtroStatus, filtroPrioridade, buscaTexto]);
 
   const handleSelecionar = (sol) => {
     setSelecionada(sol);
@@ -105,45 +132,78 @@ export default function Solicitacoes() {
         </Button>
       </div>
 
-      <div style={{ display: 'flex', gap: '12px', height: 'calc(100vh - 160px)' }}>
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '16px', flexWrap: 'wrap' }}>
+        <StatCard label="Total" value={contagem.total}
+          active={filtroStatus === ''} onClick={() => setFiltroStatus('')} />
+        <StatCard label="Pendentes" value={contagem.PENDENTE} tone={statusTone.PENDENTE}
+          active={filtroStatus === 'PENDENTE'} onClick={() => setFiltroStatus('PENDENTE')} />
+        <StatCard label="Aprovadas" value={contagem.APROVADA} tone={statusTone.APROVADA}
+          active={filtroStatus === 'APROVADA'} onClick={() => setFiltroStatus('APROVADA')} />
+        <StatCard label="Rejeitadas" value={contagem.REJEITADA} tone={statusTone.REJEITADA}
+          active={filtroStatus === 'REJEITADA'} onClick={() => setFiltroStatus('REJEITADA')} />
+        <StatCard label="Canceladas" value={contagem.CANCELADA} tone={statusTone.CANCELADA}
+          active={filtroStatus === 'CANCELADA'} onClick={() => setFiltroStatus('CANCELADA')} />
+      </div>
+
+      <div style={{ display: 'flex', gap: '12px', height: 'calc(100vh - 260px)' }}>
 
         {/* Lista */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-          <div style={{ display: 'flex', gap: '6px', marginBottom: '10px', flexWrap: 'wrap' }}>
-            {statusOpcoes.map(s => (
-              <button
-                key={s}
-                onClick={() => setFiltroStatus(s)}
-                style={{
-                  fontSize: '11px', padding: '4px 12px', borderRadius: '20px',
-                  border: '1px solid var(--border)',
-                  background: filtroStatus === s ? 'var(--blue)' : 'var(--bg3)',
-                  color: filtroStatus === s ? '#fff' : 'var(--text2)',
-                  cursor: 'pointer',
-                }}
-              >
-                {statusLabels[s]}
-              </button>
-            ))}
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+            <input
+              value={buscaTexto}
+              onChange={e => setBuscaTexto(e.target.value)}
+              placeholder="Buscar por descrição..."
+              style={{ ...inputStyle, maxWidth: '220px' }}
+            />
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+              {statusOpcoes.map(s => (
+                <button
+                  key={s}
+                  onClick={() => setFiltroStatus(s)}
+                  style={{
+                    fontSize: '11px', padding: '4px 12px', borderRadius: '20px',
+                    border: '1px solid var(--border)',
+                    background: filtroStatus === s ? 'var(--blue)' : 'var(--bg3)',
+                    color: filtroStatus === s ? '#fff' : 'var(--text2)',
+                    cursor: 'pointer', transition: 'all .12s',
+                  }}
+                >
+                  {statusLabels[s]}
+                </button>
+              ))}
+            </div>
+            <select
+              value={filtroPrioridade}
+              onChange={e => setFiltroPrioridade(e.target.value)}
+              style={{ ...inputStyle, width: 'auto', marginLeft: 'auto' }}
+            >
+              <option value="">Todas prioridades</option>
+              <option value="ALTA">Alta</option>
+              <option value="MEDIA">Média</option>
+              <option value="BAIXA">Baixa</option>
+            </select>
           </div>
 
           <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
             {carregando ? (
               <p style={{ fontSize: '12px', color: 'var(--text3)' }}>Carregando...</p>
-            ) : solicitacoes.length === 0 ? (
+            ) : solicitacoesFiltradas.length === 0 ? (
               <div style={{
                 background: 'var(--bg2)', border: '1px solid var(--border)',
                 borderRadius: 'var(--radius-lg)', padding: '48px', textAlign: 'center',
               }}>
                 <p style={{ fontSize: '13px', color: 'var(--text2)', marginBottom: '12px' }}>
-                  Você ainda não fez nenhuma solicitação.
+                  {solicitacoes.length === 0 ? 'Você ainda não fez nenhuma solicitação.' : 'Nenhuma solicitação encontrada com esses filtros.'}
                 </p>
-                <Button variant="primary" onClick={() => navigate('/nova-solicitacao')}>
-                  Fazer minha primeira solicitação
-                </Button>
+                {solicitacoes.length === 0 && (
+                  <Button variant="primary" onClick={() => navigate('/nova-solicitacao')}>
+                    Fazer minha primeira solicitação
+                  </Button>
+                )}
               </div>
             ) : (
-              solicitacoes.map(sol => (
+              solicitacoesFiltradas.map(sol => (
                 <div
                   key={sol._id}
                   onClick={() => handleSelecionar(sol)}
@@ -153,6 +213,8 @@ export default function Solicitacoes() {
                     borderRadius: 'var(--radius-lg)', padding: '12px 14px',
                     cursor: 'pointer', transition: 'all .12s',
                   }}
+                  onMouseEnter={e => { if (selecionada?._id !== sol._id) e.currentTarget.style.boxShadow = 'var(--shadow)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px' }}>
                     <span style={{

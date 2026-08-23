@@ -35,8 +35,18 @@ export default function Button({ children, variant = 'default', onClick, disable
         fontWeight: 500,
         opacity: disabled ? 0.4 : 1,
         cursor: disabled ? 'default' : 'pointer',
-        transition: 'all .12s',
+        transition: 'transform .12s, box-shadow .12s, opacity .12s',
         ...style,
+      }}
+      onMouseEnter={e => {
+        if (!disabled) {
+          e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+          e.currentTarget.style.transform = 'translateY(-1px)';
+        }
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.boxShadow = 'none';
+        e.currentTarget.style.transform = 'none';
       }}
     >
       {children}

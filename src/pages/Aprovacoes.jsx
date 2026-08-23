@@ -1,6 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { listarSolicitacoesAprovador, aprovarRejeitarSolicitacao, editarSolicitacao } from '../services/solicitacaoService.jsx';
 import Button from '../components/ui/Button.jsx';
+import StatCard from '../components/ui/StatCard.jsx';
+
+const prioridadeCor = {
+  ALTA:  { background: 'var(--red-bg)',   color: 'var(--red-dk)',   border: '1px solid var(--red-bd)' },
+  MEDIA: { background: 'var(--amber-bg)', color: 'var(--amber-dk)', border: '1px solid var(--amber-bd)' },
+  BAIXA: { background: 'var(--green-bg)', color: 'var(--green-dk)', border: '1px solid var(--green-bd)' },
+};
 
 export default function Aprovacoes() {
   const [solicitacoes, setSolicitacoes] = useState([]);
@@ -10,6 +17,8 @@ export default function Aprovacoes() {
   const [editando, setEditando] = useState(null);
   const [formEdicao, setFormEdicao] = useState({});
   const [salvando, setSalvando] = useState(false);
+  const [filtroPrioridade, setFiltroPrioridade] = useState('');
+  const [buscaTexto, setBuscaTexto] = useState('');
 
   useEffect(() => {
     buscarSolicitacoes();
@@ -26,6 +35,24 @@ export default function Aprovacoes() {
       setCarregando(false);
     }
   };
+
+  const contagem = useMemo(() => ({
+    total: solicitacoes.length,
+    ALTA: solicitacoes.filter(s => s.grauPrioridade === 'ALTA').length,
+    MEDIA: solicitacoes.filter(s => s.grauPrioridade === 'MEDIA').length,
+    BAIXA: solicitacoes.filter(s => s.grauPrioridade === 'BAIXA').length,
+  }), [solicitacoes]);
+
+  const solicitacoesFiltradas = useMemo(() => {
+    return solicitacoes.filter(s => {
+      if (filtroPrioridade && s.grauPrioridade !== filtroPrioridade) return false;
+      if (buscaTexto) {
+        const alvo = `${s.descricao} ${s.setor?.nome || ''} ${s.solicitante?.nome || ''}`.toLowerCase();
+        if (!alvo.includes(buscaTexto.toLowerCase())) return false;
+      }
+      return true;
+    });
+  }, [solicitacoes, filtroPrioridade, buscaTexto]);
 
   const handleDecisao = async (solicitacaoId, decisao) => {
     try {
@@ -65,12 +92,6 @@ export default function Aprovacoes() {
     }
   };
 
-  const prioridadeCor = {
-    ALTA:  { background: 'var(--red-bg)',   color: 'var(--red-dk)',   border: '1px solid var(--red-bd)' },
-    MEDIA: { background: 'var(--amber-bg)', color: 'var(--amber-dk)', border: '1px solid var(--amber-bd)' },
-    BAIXA: { background: 'var(--green-bg)', color: 'var(--green-dk)', border: '1px solid var(--green-bd)' },
-  };
-
   const inputStyle = {
     width: '100%', padding: '7px 10px', fontSize: '12px',
     border: '1px solid var(--border2)', borderRadius: 'var(--radius)',
@@ -88,19 +109,37 @@ export default function Aprovacoes() {
         </p>
       </div>
 
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '16px', flexWrap: 'wrap' }}>
+        <StatCard label="Total Pendentes" value={contagem.total}
+          active={filtroPrioridade === ''} onClick={() => setFiltroPrioridade('')} />
+        <StatCard label="Prioridade Alta" value={contagem.ALTA} tone={prioridadeCor.ALTA}
+          active={filtroPrioridade === 'ALTA'} onClick={() => setFiltroPrioridade('ALTA')} />
+        <StatCard label="Prioridade Média" value={contagem.MEDIA} tone={prioridadeCor.MEDIA}
+          active={filtroPrioridade === 'MEDIA'} onClick={() => setFiltroPrioridade('MEDIA')} />
+        <StatCard label="Prioridade Baixa" value={contagem.BAIXA} tone={prioridadeCor.BAIXA}
+          active={filtroPrioridade === 'BAIXA'} onClick={() => setFiltroPrioridade('BAIXA')} />
+      </div>
+
+      <input
+        value={buscaTexto}
+        onChange={e => setBuscaTexto(e.target.value)}
+        placeholder="Buscar por descrição, setor ou solicitante..."
+        style={{ ...inputStyle, maxWidth: '320px', marginBottom: '14px' }}
+      />
+
       {carregando ? (
         <p style={{ fontSize: '12px', color: 'var(--text3)' }}>Carregando...</p>
-      ) : solicitacoes.length === 0 ? (
+      ) : solicitacoesFiltradas.length === 0 ? (
         <div style={{
           background: 'var(--bg2)', border: '1px solid var(--border)',
           borderRadius: 'var(--radius-lg)', padding: '32px',
           textAlign: 'center', color: 'var(--text3)', fontSize: '12px',
         }}>
-          Nenhuma solicitação pendente.
+          Nenhuma solicitação encontrada.
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {solicitacoes.map(sol => (
+          {solicitacoesFiltradas.map(sol => (
             <div key={sol._id} style={{
               background: 'var(--bg2)', border: '1px solid var(--border)',
               borderRadius: 'var(--radius-lg)', overflow: 'hidden',

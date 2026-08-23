@@ -18,9 +18,10 @@ export default function Badge({ status }) {
       ...styles[status],
       fontSize: '10px',
       fontWeight: 600,
-      borderRadius: '4px',
-      padding: '2px 8px',
+      borderRadius: '20px',
+      padding: '3px 10px',
       display: 'inline-block',
+      letterSpacing: '0.2px',
     }}>
       {labels[status] || status}
     </span>
