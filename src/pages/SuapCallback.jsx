@@ -15,6 +15,9 @@ export default function SuapCallback() {
   useEffect(() => {
     const processarAutenticacao = async () => {
       try {
+        console.log('URL atual:', window.location.href);
+        console.log('Hash recebido:', window.location.hash);
+
         const hash = window.location.hash;
 
         if (!hash) {
@@ -28,17 +31,24 @@ export default function SuapCallback() {
 
         const accessToken = params.get('access_token');
 
+        console.log(
+          'Access token encontrado:',
+          !!accessToken
+        );
+
         if (!accessToken) {
-          setMensagem('Token não encontrado.');
+          setMensagem('Token não encontrado na resposta do SUAP.');
           return;
         }
 
-        setMensagem('Consultando seus dados no SUAP...');
+        setMensagem(
+          'Token recebido. Consultando seus dados no SUAP...'
+        );
 
         const response = await axios.post(
           `${API_URL.replace('/api', '')}/auth/suap/usuario`,
           {
-            accessToken,
+            accessToken: accessToken,
           }
         );
 
@@ -69,7 +79,6 @@ export default function SuapCallback() {
     processarAutenticacao();
   }, []);
 
-
   return (
     <div
       style={{
@@ -82,7 +91,6 @@ export default function SuapCallback() {
         padding: '20px',
       }}
     >
-
       <div
         style={{
           background: 'var(--bg2)',
@@ -94,7 +102,6 @@ export default function SuapCallback() {
           boxShadow: 'var(--shadow)',
         }}
       >
-
         <h2
           style={{
             marginBottom: '10px',
@@ -115,7 +122,6 @@ export default function SuapCallback() {
           {mensagem}
         </p>
 
-
         {usuarioSuap && (
           <div
             style={{
@@ -126,7 +132,6 @@ export default function SuapCallback() {
               fontSize: '12px',
             }}
           >
-
             <h3
               style={{
                 fontSize: '13px',
@@ -149,12 +154,9 @@ export default function SuapCallback() {
                 2
               )}
             </pre>
-
           </div>
         )}
-
       </div>
-
     </div>
   );
 }
