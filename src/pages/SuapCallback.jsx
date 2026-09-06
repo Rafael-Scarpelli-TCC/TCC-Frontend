@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 const SUAP_USER_URL =
-  'https://suap.ifpr.edu.br/api/v2/minhas-informacoes/meus-dados/';
+  'https://suap.ifpr.edu.br/api/rh/eu/';
 
 export default function SuapCallback() {
   const [mensagem, setMensagem] = useState(
