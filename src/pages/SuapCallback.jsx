@@ -1,9 +1,6 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
 
-const API_URL =
-  import.meta.env.VITE_API_URL ||
-  'http://localhost:3000/api';
+const SUAP_USER_URL = 'https://suap.ifpr.edu.br/api/eu/';
 
 export default function SuapCallback() {
   const [mensagem, setMensagem] = useState(
@@ -25,9 +22,7 @@ export default function SuapCallback() {
           return;
         }
 
-        const params = new URLSearchParams(
-          hash.substring(1)
-        );
+        const params = new URLSearchParams(hash.substring(1));
 
         const accessToken = params.get('access_token');
 
@@ -37,7 +32,9 @@ export default function SuapCallback() {
         );
 
         if (!accessToken) {
-          setMensagem('Token não encontrado na resposta do SUAP.');
+          setMensagem(
+            'Token não encontrado na resposta do SUAP.'
+          );
           return;
         }
 
@@ -45,19 +42,53 @@ export default function SuapCallback() {
           'Token recebido. Consultando seus dados no SUAP...'
         );
 
-        const response = await axios.post(
-          `${API_URL.replace('/api', '')}/auth/suap/usuario`,
-          {
-            accessToken: accessToken,
-          }
-        );
+        /*
+         * Agora a consulta é feita diretamente pelo navegador
+         * para o SUAP, em vez de passar pelo backend.
+         */
+        const response = await fetch(SUAP_USER_URL, {
+          method: 'GET',
+
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            Accept: 'application/json',
+          },
+        });
 
         console.log(
-          'Dados recebidos do SUAP:',
-          response.data.usuario
+          'Status da resposta do SUAP:',
+          response.status
         );
 
-        setUsuarioSuap(response.data.usuario);
+        const texto = await response.text();
+
+        console.log(
+          'Resposta do SUAP:',
+          texto
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            `SUAP respondeu ${response.status}: ${texto}`
+          );
+        }
+
+        let dados;
+
+        try {
+          dados = JSON.parse(texto);
+        } catch {
+          throw new Error(
+            'O SUAP respondeu com conteúdo que não é JSON.'
+          );
+        }
+
+        console.log(
+          'Dados do usuário SUAP:',
+          dados
+        );
+
+        setUsuarioSuap(dados);
 
         setMensagem(
           'Dados do SUAP recebidos com sucesso!'
@@ -69,8 +100,12 @@ export default function SuapCallback() {
           error
         );
 
+        /*
+         * Se o problema for CORS, normalmente o navegador
+         * mostrará a informação detalhada no Console.
+         */
         setMensagem(
-          error.response?.data?.message ||
+          error.message ||
           'Erro ao consultar os dados do SUAP.'
         );
       }
