@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
-const SUAP_USER_URL = 'https://suap.ifpr.edu.br/api/eu/';
+const SUAP_USER_URL =
+  'https://suap.ifpr.edu.br/api/v2/minhas-informacoes/meus-dados/';
 
 export default function SuapCallback() {
   const [mensagem, setMensagem] = useState(
@@ -22,7 +23,9 @@ export default function SuapCallback() {
           return;
         }
 
-        const params = new URLSearchParams(hash.substring(1));
+        const params = new URLSearchParams(
+          hash.substring(1)
+        );
 
         const accessToken = params.get('access_token');
 
@@ -43,8 +46,7 @@ export default function SuapCallback() {
         );
 
         /*
-         * Agora a consulta é feita diretamente pelo navegador
-         * para o SUAP, em vez de passar pelo backend.
+         * Consulta diretamente a API v2 do SUAP.
          */
         const response = await fetch(SUAP_USER_URL, {
           method: 'GET',
@@ -100,10 +102,6 @@ export default function SuapCallback() {
           error
         );
 
-        /*
-         * Se o problema for CORS, normalmente o navegador
-         * mostrará a informação detalhada no Console.
-         */
         setMensagem(
           error.message ||
           'Erro ao consultar os dados do SUAP.'
