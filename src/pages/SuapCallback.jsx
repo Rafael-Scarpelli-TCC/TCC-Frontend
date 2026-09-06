@@ -1,38 +1,74 @@
 import { useEffect, useState } from 'react';
+import axios from 'axios';
+
+const API_URL =
+  import.meta.env.VITE_API_URL ||
+  'http://localhost:3000/api';
 
 export default function SuapCallback() {
   const [mensagem, setMensagem] = useState(
     'Processando autenticação...'
   );
 
+  const [usuarioSuap, setUsuarioSuap] = useState(null);
+
   useEffect(() => {
-    const hash = window.location.hash;
+    const processarAutenticacao = async () => {
+      try {
+        const hash = window.location.hash;
 
-    if (!hash) {
-      setMensagem('Token não recebido.');
-      return;
-    }
+        if (!hash) {
+          setMensagem('Token não recebido.');
+          return;
+        }
 
-    const params = new URLSearchParams(
-      hash.substring(1)
-    );
+        const params = new URLSearchParams(
+          hash.substring(1)
+        );
 
-    const accessToken = params.get('access_token');
+        const accessToken = params.get('access_token');
 
-    if (!accessToken) {
-      setMensagem('Token não encontrado.');
-      return;
-    }
+        if (!accessToken) {
+          setMensagem('Token não encontrado.');
+          return;
+        }
 
-    console.log(
-      'Token SUAP recebido:',
-      accessToken
-    );
+        setMensagem('Consultando seus dados no SUAP...');
 
-    setMensagem(
-      'Token SUAP recebido com sucesso!'
-    );
+        const response = await axios.post(
+          `${API_URL.replace('/api', '')}/auth/suap/usuario`,
+          {
+            accessToken,
+          }
+        );
+
+        console.log(
+          'Dados recebidos do SUAP:',
+          response.data.usuario
+        );
+
+        setUsuarioSuap(response.data.usuario);
+
+        setMensagem(
+          'Dados do SUAP recebidos com sucesso!'
+        );
+
+      } catch (error) {
+        console.error(
+          'Erro na autenticação SUAP:',
+          error
+        );
+
+        setMensagem(
+          error.response?.data?.message ||
+          'Erro ao consultar os dados do SUAP.'
+        );
+      }
+    };
+
+    processarAutenticacao();
   }, []);
+
 
   return (
     <div
@@ -43,6 +79,7 @@ export default function SuapCallback() {
         justifyContent: 'center',
         background: 'var(--bg)',
         color: 'var(--text)',
+        padding: '20px',
       }}
     >
 
@@ -52,7 +89,8 @@ export default function SuapCallback() {
           border: '1px solid var(--border)',
           borderRadius: 'var(--radius-lg)',
           padding: '30px',
-          textAlign: 'center',
+          width: '100%',
+          maxWidth: '500px',
           boxShadow: 'var(--shadow)',
         }}
       >
@@ -61,6 +99,7 @@ export default function SuapCallback() {
           style={{
             marginBottom: '10px',
             fontSize: '18px',
+            textAlign: 'center',
           }}
         >
           Login SUAP
@@ -69,10 +108,50 @@ export default function SuapCallback() {
         <p
           style={{
             color: 'var(--text2)',
+            textAlign: 'center',
+            marginBottom: '20px',
           }}
         >
           {mensagem}
         </p>
+
+
+        {usuarioSuap && (
+          <div
+            style={{
+              background: 'var(--bg3)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius)',
+              padding: '15px',
+              fontSize: '12px',
+            }}
+          >
+
+            <h3
+              style={{
+                fontSize: '13px',
+                marginBottom: '10px',
+              }}
+            >
+              Dados recebidos do SUAP
+            </h3>
+
+            <pre
+              style={{
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+                color: 'var(--text2)',
+              }}
+            >
+              {JSON.stringify(
+                usuarioSuap,
+                null,
+                2
+              )}
+            </pre>
+
+          </div>
+        )}
 
       </div>
 
