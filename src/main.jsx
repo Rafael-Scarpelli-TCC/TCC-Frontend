@@ -1,12 +1,19 @@
 import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate
+} from 'react-router-dom';
+
 import './index.css';
 
 import Layout from './components/layout/Layout.jsx';
 
 import Login from './pages/Login.jsx';
 import SuapCallback from './pages/SuapCallback.jsx';
+import CadastroSuap from './pages/CadastroSuap.jsx';
 
 import Solicitacoes from './pages/Solicitacoes.jsx';
 import NovaSolicitacao from './pages/NovaSolicitacao.jsx';
@@ -17,12 +24,11 @@ import Usuarios from './pages/Usuarios.jsx';
 import Cronograma from './pages/Cronograma.jsx';
 import Configuracoes from './pages/Configuracoes.jsx';
 
-
 function Sistema({ usuario, onLogout }) {
   const { perfil, isAprovador } = usuario;
 
   const podeAprovar =
-    isAprovador || perfil === 'ADMINISTRADOR';
+    isAprovador || perfil === 'ADMIN';
 
   return (
     <Layout
@@ -30,7 +36,6 @@ function Sistema({ usuario, onLogout }) {
       onLogout={onLogout}
     >
       <Routes>
-
         <Route
           path="/"
           element={<Solicitacoes />}
@@ -55,28 +60,28 @@ function Sistema({ usuario, onLogout }) {
           />
         )}
 
-        {perfil === 'ADMINISTRADOR' && (
+        {perfil === 'ADMIN' && (
           <Route
             path="/admin"
             element={<Admin />}
           />
         )}
 
-        {perfil === 'ADMINISTRADOR' && (
+        {perfil === 'ADMIN' && (
           <Route
             path="/usuarios"
             element={<Usuarios />}
           />
         )}
 
-        {perfil === 'ADMINISTRADOR' && (
+        {perfil === 'ADMIN' && (
           <Route
             path="/cronograma"
             element={<Cronograma />}
           />
         )}
 
-        {perfil === 'ADMINISTRADOR' && (
+        {perfil === 'ADMIN' && (
           <Route
             path="/configuracoes"
             element={<Configuracoes />}
@@ -87,12 +92,10 @@ function Sistema({ usuario, onLogout }) {
           path="*"
           element={<Navigate to="/" />}
         />
-
       </Routes>
     </Layout>
   );
 }
-
 
 function App() {
   const [usuario, setUsuario] = useState(() => {
@@ -103,11 +106,9 @@ function App() {
       : null;
   });
 
-
   const handleLogin = (u) => {
     setUsuario(u);
   };
-
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -116,26 +117,19 @@ function App() {
     setUsuario(null);
   };
 
-
   return (
     <BrowserRouter>
-
       <Routes>
-
-        {/* 
-          Callback do OAuth2 do SUAP.
-          Essa rota precisa funcionar mesmo
-          quando ainda não existe usuário logado.
-        */}
         <Route
           path="/auth/suap/callback"
           element={<SuapCallback />}
         />
 
+        <Route
+          path="/cadastro-suap"
+          element={<CadastroSuap />}
+        />
 
-        {/* 
-          Todas as outras rotas do sistema.
-        */}
         <Route
           path="*"
           element={
@@ -149,15 +143,14 @@ function App() {
             )
           }
         />
-
       </Routes>
-
     </BrowserRouter>
   );
 }
 
-
-createRoot(document.getElementById('root')).render(
+createRoot(
+  document.getElementById('root')
+).render(
   <StrictMode>
     <App />
   </StrictMode>

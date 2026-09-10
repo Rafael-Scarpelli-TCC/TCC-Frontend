@@ -1,25 +1,24 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api from '../services/api';
 
 const SUAP_USER_URL =
   'https://suap.ifpr.edu.br/api/rh/eu/';
 
 export default function SuapCallback() {
+  const navigate = useNavigate();
+
   const [mensagem, setMensagem] = useState(
     'Processando autenticação...'
   );
 
-  const [usuarioSuap, setUsuarioSuap] = useState(null);
-
   useEffect(() => {
     const processarAutenticacao = async () => {
       try {
-        console.log('URL atual:', window.location.href);
-        console.log('Hash recebido:', window.location.hash);
-
         const hash = window.location.hash;
 
         if (!hash) {
-          setMensagem('Token não recebido.');
+          setMensagem('Token não recebido do SUAP.');
           return;
         }
 
@@ -28,11 +27,6 @@ export default function SuapCallback() {
         );
 
         const accessToken = params.get('access_token');
-
-        console.log(
-          'Access token encontrado:',
-          !!accessToken
-        );
 
         if (!accessToken) {
           setMensagem(
@@ -45,29 +39,15 @@ export default function SuapCallback() {
           'Token recebido. Consultando seus dados no SUAP...'
         );
 
-        /*
-         * Consulta diretamente a API v2 do SUAP.
-         */
         const response = await fetch(SUAP_USER_URL, {
           method: 'GET',
-
           headers: {
             Authorization: `Bearer ${accessToken}`,
-            Accept: 'application/json',
-          },
+            Accept: 'application/json'
+          }
         });
 
-        console.log(
-          'Status da resposta do SUAP:',
-          response.status
-        );
-
         const texto = await response.text();
-
-        console.log(
-          'Resposta do SUAP:',
-          texto
-        );
 
         if (!response.ok) {
           throw new Error(
@@ -85,16 +65,63 @@ export default function SuapCallback() {
           );
         }
 
-        console.log(
-          'Dados do usuário SUAP:',
-          dados
-        );
+        const nome =
+          dados.nome_registro ||
+          dados.nome_usual ||
+          dados.nome;
 
-        setUsuarioSuap(dados);
+        const email =
+          dados.email_academico ||
+          dados.email_preferencial ||
+          dados.email;
+
+        const identificacao = dados.identificacao;
+
+        const tipoUsuario = dados.tipo_usuario;
+
+        if (
+          !nome ||
+          !email ||
+          !identificacao ||
+          !tipoUsuario
+        ) {
+          throw new Error(
+            'O SUAP não retornou todos os dados necessários para o cadastro.'
+          );
+        }
 
         setMensagem(
-          'Dados do SUAP recebidos com sucesso!'
+          'Verificando se você já possui cadastro...'
         );
+
+        const verificacao = await api.get(
+          `/usuarios/verificar-identificacao/${encodeURIComponent(identificacao)}`
+        );
+
+        if (verificacao.data.cadastrado) {
+          setMensagem(
+            'Este usuário já possui cadastro no sistema. Redirecionando para o login...'
+          );
+
+          setTimeout(() => {
+            navigate('/');
+          }, 2500);
+
+          return;
+        }
+
+        const usuarioSuap = {
+          nome,
+          email,
+          identificacao,
+          tipoUsuario
+        };
+
+        navigate('/cadastro-suap', {
+          state: {
+            usuarioSuap
+          }
+        });
 
       } catch (error) {
         console.error(
@@ -103,14 +130,15 @@ export default function SuapCallback() {
         );
 
         setMensagem(
+          error.response?.data?.message ||
           error.message ||
-          'Erro ao consultar os dados do SUAP.'
+          'Erro ao processar autenticação do SUAP.'
         );
       }
     };
 
     processarAutenticacao();
-  }, []);
+  }, [navigate]);
 
   return (
     <div
@@ -121,7 +149,7 @@ export default function SuapCallback() {
         justifyContent: 'center',
         background: 'var(--bg)',
         color: 'var(--text)',
-        padding: '20px',
+        padding: '20px'
       }}
     >
       <div
@@ -133,62 +161,25 @@ export default function SuapCallback() {
           width: '100%',
           maxWidth: '500px',
           boxShadow: 'var(--shadow)',
+          textAlign: 'center'
         }}
       >
         <h2
           style={{
-            marginBottom: '10px',
-            fontSize: '18px',
-            textAlign: 'center',
+            marginBottom: '15px',
+            fontSize: '20px'
           }}
         >
-          Login SUAP
+          Cadastro com SUAP
         </h2>
 
         <p
           style={{
-            color: 'var(--text2)',
-            textAlign: 'center',
-            marginBottom: '20px',
+            color: 'var(--text2)'
           }}
         >
           {mensagem}
         </p>
-
-        {usuarioSuap && (
-          <div
-            style={{
-              background: 'var(--bg3)',
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--radius)',
-              padding: '15px',
-              fontSize: '12px',
-            }}
-          >
-            <h3
-              style={{
-                fontSize: '13px',
-                marginBottom: '10px',
-              }}
-            >
-              Dados recebidos do SUAP
-            </h3>
-
-            <pre
-              style={{
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-word',
-                color: 'var(--text2)',
-              }}
-            >
-              {JSON.stringify(
-                usuarioSuap,
-                null,
-                2
-              )}
-            </pre>
-          </div>
-        )}
       </div>
     </div>
   );
