@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+
 import api from '../services/api';
+import './CadastroSuap.css';
 
 export default function CadastroSuap() {
   const location = useLocation();
@@ -15,43 +17,18 @@ export default function CadastroSuap() {
 
   if (!usuarioSuap) {
     return (
-      <div
-        style={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: 'var(--bg)',
-          color: 'var(--text)',
-          padding: '20px'
-        }}
-      >
-        <div
-          style={{
-            background: 'var(--bg2)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-lg)',
-            padding: '30px',
-            width: '100%',
-            maxWidth: '500px',
-            boxShadow: 'var(--shadow)',
-            textAlign: 'center'
-          }}
-        >
-          <h2>Dados de cadastro não encontrados</h2>
+      <div className="cadastro-suap-page">
+        <div className="cadastro-suap-card cadastro-suap-empty">
+          <h1>Dados de cadastro não encontrados</h1>
 
-          <p
-            style={{
-              color: 'var(--text2)',
-              marginTop: '12px',
-              marginBottom: '20px'
-            }}
-          >
-            Inicie o cadastro novamente através do SUAP.
+          <p>
+            Não foi possível recuperar os dados do SUAP.
+            Inicie o cadastro novamente através da tela de login.
           </p>
 
           <button
             type="button"
+            className="cadastro-suap-button cadastro-suap-button-primary"
             onClick={() => navigate('/')}
           >
             Voltar para o login
@@ -67,7 +44,9 @@ export default function CadastroSuap() {
     setMensagem('');
 
     if (senha.length < 6) {
-      setMensagem('A senha deve possuir pelo menos 6 caracteres.');
+      setMensagem(
+        'A senha deve possuir pelo menos 6 caracteres.'
+      );
       return;
     }
 
@@ -87,154 +66,177 @@ export default function CadastroSuap() {
         senha
       };
 
-      await api.post('/usuarios/cadastro-suap', dadosCadastro);
+      await api.post(
+        '/usuarios/cadastro-suap',
+        dadosCadastro
+      );
 
-      alert('Cadastro realizado com sucesso! Agora faça login com seu email e senha.');
+      window.alert(
+        'Cadastro realizado com sucesso! Agora faça login com seu email e senha.'
+      );
 
       navigate('/');
+
     } catch (error) {
-      console.error('Erro ao finalizar cadastro:', error);
+      console.error(
+        'Erro ao finalizar cadastro:',
+        error
+      );
 
       const mensagemErro =
         error.response?.data?.message ||
         'Erro ao realizar cadastro.';
 
       setMensagem(mensagemErro);
+
     } finally {
       setCarregando(false);
     }
   };
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'var(--bg)',
-        color: 'var(--text)',
-        padding: '20px'
-      }}
-    >
-      <div
-        style={{
-          background: 'var(--bg2)',
-          border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-lg)',
-          padding: '30px',
-          width: '100%',
-          maxWidth: '500px',
-          boxShadow: 'var(--shadow)'
-        }}
-      >
-        <h2
-          style={{
-            marginBottom: '10px',
-            fontSize: '20px',
-            textAlign: 'center'
-          }}
-        >
-          Complete seu cadastro
-        </h2>
+    <div className="cadastro-suap-page">
+      <div className="cadastro-suap-card">
 
-        <p
-          style={{
-            color: 'var(--text2)',
-            textAlign: 'center',
-            marginBottom: '25px'
-          }}
-        >
-          Confira seus dados e defina uma senha para acessar o sistema.
-        </p>
+        <div className="cadastro-suap-header">
+          <h1>Complete seu cadastro</h1>
 
-        <form onSubmit={finalizarCadastro}>
-          <div style={{ marginBottom: '15px' }}>
-            <label>Nome</label>
+          <p>
+            Seus dados foram obtidos pelo SUAP.
+            Defina uma senha para acessar o sistema.
+          </p>
+        </div>
+
+        <div className="cadastro-suap-info">
+          <span className="cadastro-suap-info-icon">
+            ⓘ
+          </span>
+
+          <span>
+            Os dados abaixo são provenientes do SUAP e não podem
+            ser alterados nesta etapa. O setor será definido
+            posteriormente pelo administrador.
+          </span>
+        </div>
+
+        <form
+          className="cadastro-suap-form"
+          onSubmit={finalizarCadastro}
+        >
+          <div className="cadastro-suap-field">
+            <label htmlFor="nome">
+              Nome completo
+            </label>
 
             <input
+              id="nome"
               type="text"
               value={usuarioSuap.nome}
               readOnly
             />
           </div>
 
-          <div style={{ marginBottom: '15px' }}>
-            <label>Email acadêmico</label>
+          <div className="cadastro-suap-field">
+            <label htmlFor="email">
+              Email acadêmico
+            </label>
 
             <input
+              id="email"
               type="email"
               value={usuarioSuap.email}
               readOnly
             />
           </div>
 
-          <div style={{ marginBottom: '15px' }}>
-            <label>Identificação</label>
+          <div className="cadastro-suap-field">
+            <label htmlFor="identificacao">
+              Identificação
+            </label>
 
             <input
+              id="identificacao"
               type="text"
               value={usuarioSuap.identificacao}
               readOnly
             />
           </div>
 
-          <div style={{ marginBottom: '15px' }}>
-            <label>Tipo de usuário</label>
+          <div className="cadastro-suap-field">
+            <label htmlFor="tipoUsuario">
+              Tipo de usuário
+            </label>
 
             <input
+              id="tipoUsuario"
               type="text"
               value={usuarioSuap.tipoUsuario}
               readOnly
             />
           </div>
 
-          <div style={{ marginBottom: '15px' }}>
-            <label>Senha</label>
+          <div className="cadastro-suap-field">
+            <label htmlFor="senha">
+              Senha
+            </label>
 
             <input
+              id="senha"
               type="password"
               value={senha}
-              onChange={(event) => setSenha(event.target.value)}
-              placeholder="Digite sua senha"
+              onChange={(event) =>
+                setSenha(event.target.value)
+              }
+              placeholder="Digite uma senha"
+              minLength={6}
               required
             />
           </div>
 
-          <div style={{ marginBottom: '15px' }}>
-            <label>Confirmar senha</label>
+          <div className="cadastro-suap-field">
+            <label htmlFor="confirmarSenha">
+              Confirmar senha
+            </label>
 
             <input
+              id="confirmarSenha"
               type="password"
               value={confirmarSenha}
-              onChange={(event) => setConfirmarSenha(event.target.value)}
+              onChange={(event) =>
+                setConfirmarSenha(event.target.value)
+              }
               placeholder="Digite a senha novamente"
+              minLength={6}
               required
             />
           </div>
 
           {mensagem && (
-            <p
-              style={{
-                color: '#dc2626',
-                marginBottom: '15px'
-              }}
-            >
+            <div className="cadastro-suap-error">
               {mensagem}
-            </p>
+            </div>
           )}
 
-          <button
-            type="submit"
-            disabled={carregando}
-            style={{
-              width: '100%'
-            }}
-          >
-            {carregando
-              ? 'Finalizando cadastro...'
-              : 'Finalizar cadastro'}
-          </button>
+          <div className="cadastro-suap-actions">
+            <button
+              type="button"
+              className="cadastro-suap-button cadastro-suap-button-secondary"
+              onClick={() => navigate('/')}
+              disabled={carregando}
+            >
+              Cancelar
+            </button>
+
+            <button
+              type="submit"
+              className="cadastro-suap-button cadastro-suap-button-primary"
+              disabled={carregando}
+            >
+              {carregando
+                ? 'Finalizando cadastro...'
+                : 'Finalizar cadastro'}
+            </button>
+          </div>
         </form>
       </div>
     </div>

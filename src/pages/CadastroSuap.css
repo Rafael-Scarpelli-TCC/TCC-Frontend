@@ -1,0 +1,195 @@
+.cadastro-suap-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.cadastro-suap-card {
+  width: 100%;
+  max-width: 520px;
+  padding: 32px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+
+.cadastro-suap-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.cadastro-suap-header h1 {
+  margin: 0 0 8px;
+  font-size: 23px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.cadastro-suap-header p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text2);
+}
+
+.cadastro-suap-form {
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+}
+
+.cadastro-suap-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cadastro-suap-field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.cadastro-suap-field input {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    background 0.2s;
+  box-sizing: border-box;
+}
+
+.cadastro-suap-field input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.cadastro-suap-field input:read-only {
+  background: var(--bg3);
+  color: var(--text2);
+  cursor: not-allowed;
+}
+
+.cadastro-suap-field input::placeholder {
+  color: var(--text3);
+}
+
+.cadastro-suap-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg3);
+  color: var(--text2);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.cadastro-suap-info-icon {
+  flex-shrink: 0;
+  font-size: 15px;
+}
+
+.cadastro-suap-error {
+  padding: 11px 13px;
+  border: 1px solid var(--red-bd);
+  border-radius: var(--radius);
+  background: var(--red-bg);
+  color: var(--red-dk);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.cadastro-suap-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.cadastro-suap-button {
+  flex: 1;
+  min-height: 42px;
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    opacity 0.2s;
+}
+
+.cadastro-suap-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.cadastro-suap-button-primary {
+  border: 1px solid var(--blue);
+  background: var(--blue);
+  color: white;
+}
+
+.cadastro-suap-button-primary:hover:not(:disabled) {
+  filter: brightness(0.95);
+}
+
+.cadastro-suap-button-secondary {
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text2);
+}
+
+.cadastro-suap-button-secondary:hover:not(:disabled) {
+  background: var(--bg3);
+}
+
+.cadastro-suap-empty {
+  text-align: center;
+}
+
+.cadastro-suap-empty h1 {
+  margin: 0 0 12px;
+  font-size: 20px;
+}
+
+.cadastro-suap-empty p {
+  margin: 0 0 24px;
+  color: var(--text2);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+@media (max-width: 600px) {
+  .cadastro-suap-page {
+    padding: 16px;
+  }
+
+  .cadastro-suap-card {
+    padding: 24px 20px;
+  }
+
+  .cadastro-suap-header h1 {
+    font-size: 21px;
+  }
+
+  .cadastro-suap-actions {
+    flex-direction: column-reverse;
+  }
+}
