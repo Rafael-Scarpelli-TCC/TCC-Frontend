@@ -3,12 +3,12 @@ import Sidebar from './Sidebar.jsx';
 
 export default function Layout({ children, usuario, onLogout }) {
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+    <div className="app-shell">
       <Topbar usuario={usuario} onLogout={onLogout} />
-      <div style={{ display: 'flex' }}>
+      <div className="app-frame">
         <Sidebar usuario={usuario} />
-        <main style={{ flex: 1, padding: '22px 26px', background: 'var(--bg3)' }}>
-          {children}
+        <main className="app-main">
+          <div className="app-content">{children}</div>
         </main>
       </div>
     </div>
